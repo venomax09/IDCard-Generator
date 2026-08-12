@@ -103,7 +103,7 @@ const CARD_H = 1350;
 function randomBadgeCode() {
   const t = Date.now().toString(36).toUpperCase().slice(-4);
   const r = Math.random().toString(36).toUpperCase().slice(2, 6);
-  return `GOA26-${t}${r}`;
+  return `HHGOA26-${t}${r}`;
 }
 
 function loadFonts() {
@@ -741,7 +741,7 @@ export default function App() {
                   type="text"
                   value={name}
                   maxLength={28}
-                  placeholder="Name — e.g. Aditi Rao"
+                  placeholder="Enter Name"
                   onChange={(e) => setName(e.target.value)}
                   style={{
                     width: "100%",
