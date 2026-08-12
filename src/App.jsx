@@ -96,6 +96,7 @@ const TITLES = [
   "Production Mein Dekhenge",
 ];
 
+
 const CARD_W = 1080;
 const CARD_H = 1350;
 
@@ -308,7 +309,7 @@ export default function App() {
 
     // Draw Goa beach illustration from middle to bottom
     if (bgImage) {
-      const bgDrawY = CARD_H * 0.42; // start around 42% down
+      const bgDrawY = CARD_H * 0.5; // start at the middle of the card
       const bgDrawH = CARD_H - bgDrawY;
       const bgDrawW = CARD_W;
 
@@ -329,16 +330,24 @@ export default function App() {
       }
 
       ctx.save();
-      ctx.globalAlpha = 0.35;
+      // clip to the card's rounded shape so art never spills past the border
+      roundRectPath(ctx, 24, 24, CARD_W - 48, CARD_H - 48, 36);
+      ctx.clip();
+      ctx.globalAlpha = 0.85;
       ctx.drawImage(bgImage, sx, sy, sw, sh, 0, bgDrawY, bgDrawW, bgDrawH);
       ctx.restore();
 
-      // gradient overlay so text stays readable
-      const overlay = ctx.createLinearGradient(0, bgDrawY, 0, bgDrawY + 200);
-      overlay.addColorStop(0, GREEN);
-      overlay.addColorStop(1, "rgba(11,74,52,0)");
-      ctx.fillStyle = overlay;
-      ctx.fillRect(0, bgDrawY, CARD_W, 200);
+      // soft fade at the top edge so the art melts into the green
+      ctx.save();
+      roundRectPath(ctx, 24, 24, CARD_W - 48, CARD_H - 48, 36);
+      ctx.clip();
+      const fade = ctx.createLinearGradient(0, bgDrawY - 60, 0, bgDrawY + 190);
+      fade.addColorStop(0, GREEN);
+      fade.addColorStop(0.45, "rgba(11,74,52,0.75)");
+      fade.addColorStop(1, "rgba(11,74,52,0)");
+      ctx.fillStyle = fade;
+      ctx.fillRect(0, bgDrawY - 60, CARD_W, 250);
+      ctx.restore();
     }
 
     // outer border
@@ -406,6 +415,21 @@ export default function App() {
     ctx.stroke();
     cornerTicks(ctx, frameX, frameY, frameW, frameH, 24, PINK, 4);
 
+    // readability scrim behind the name / ID / role / title block
+    const scrimY = frameY + frameH + 24;
+    const scrimH = 270;
+    ctx.save();
+    roundRectPath(ctx, 24, 24, CARD_W - 48, CARD_H - 48, 36);
+    ctx.clip();
+    const scrim = ctx.createLinearGradient(0, scrimY, 0, scrimY + scrimH);
+    scrim.addColorStop(0, "rgba(7,48,36,0)");
+    scrim.addColorStop(0.18, "rgba(7,48,36,0.86)");
+    scrim.addColorStop(0.82, "rgba(7,48,36,0.86)");
+    scrim.addColorStop(1, "rgba(7,48,36,0)");
+    ctx.fillStyle = scrim;
+    ctx.fillRect(24, scrimY, CARD_W - 48, scrimH);
+    ctx.restore();
+
     // name
     let y = frameY + frameH + 90;
     ctx.fillStyle = GOLD;
@@ -462,6 +486,19 @@ export default function App() {
     ctx.fillText(pillText, CARD_W / 2, pillY + pillH / 2 + 2);
     ctx.textBaseline = "alphabetic";
 
+    // footer backdrop for readability over bg image (drawn first, art sits under it)
+    ctx.save();
+    roundRectPath(ctx, 24, 24, CARD_W - 48, CARD_H - 48, 36);
+    ctx.clip();
+    const footFade = ctx.createLinearGradient(0, CARD_H - 260, 0, CARD_H - 120);
+    footFade.addColorStop(0, "rgba(7,48,36,0)");
+    footFade.addColorStop(1, "rgba(7,48,36,0.92)");
+    ctx.fillStyle = footFade;
+    ctx.fillRect(24, CARD_H - 260, CARD_W - 48, 140);
+    ctx.fillStyle = "rgba(7,48,36,0.92)";
+    ctx.fillRect(24, CARD_H - 120, CARD_W - 48, 96);
+    ctx.restore();
+
     // perforation
     const perfY = CARD_H - 200;
     ctx.fillStyle = "rgba(244,239,230,0.35)";
@@ -472,10 +509,6 @@ export default function App() {
     }
 
     drawWave(ctx, pad, CARD_H - 140, CARD_W - pad * 2, 5, 54, GOLD, 2.5);
-
-    // footer with dark backdrop for readability over bg image
-    ctx.fillStyle = "rgba(7,48,36,0.7)";
-    ctx.fillRect(24, CARD_H - 120, CARD_W - 48, 72);
 
     ctx.font = "600 24px 'JetBrains Mono', monospace";
     ctx.fillStyle = DIM;
@@ -488,7 +521,7 @@ export default function App() {
     ctx.font = "500 19px 'JetBrains Mono', monospace";
     ctx.fillStyle = "rgba(244,239,230,0.55)";
     ctx.fillText(
-      "",
+      "HACKER HOUSE GOA",
       CARD_W / 2,
       CARD_H - 46,
     );
@@ -741,7 +774,7 @@ export default function App() {
                   type="text"
                   value={name}
                   maxLength={28}
-                  placeholder="Enter Name"
+                  placeholder="Enter Your Name"
                   onChange={(e) => setName(e.target.value)}
                   style={{
                     width: "100%",
@@ -760,7 +793,7 @@ export default function App() {
                   type="text"
                   value={role}
                   maxLength={34}
-                  placeholder="Stack / role — e.g. full-stack · rust"
+                  placeholder="Stack / role — e.g. full-stack, AI"
                   onChange={(e) => setRole(e.target.value)}
                   style={{
                     width: "100%",
@@ -954,7 +987,7 @@ export default function App() {
           textAlign: "center",
         }}
       >
-         Runs entirely in your browser · nothing is uploaded · #HHGoaIDF
+
       </footer>
     </div>
   );
